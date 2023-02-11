@@ -58,7 +58,7 @@ def login(username, password):
     return key.text
 
 
-def timetable(key: str, use_cache: bool = True):
+def timetable(key: str, username: str, use_cache: bool = True):
     cache_path = os.path.join(CACHE_DIR, "timetable.xml")
     if use_cache and os.path.exists(cache_path):
         print("Using cached timetable...")
@@ -69,7 +69,7 @@ def timetable(key: str, use_cache: bool = True):
         data = {
             "Command": "GetStudentTimetable",
             "Key": key,
-            "StudentID": "st22209",
+            "StudentID": username,
             "Grid": "2023TT",
         }
 
@@ -180,7 +180,7 @@ def main():
         os.mkdir(CACHE_DIR)
 
     key = login(USERNAME, PASSWORD)
-    timetable(key)
+    timetable(key, USERNAME)
 
 
 if __name__ == "__main__":
