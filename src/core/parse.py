@@ -29,7 +29,7 @@ def timetable(timetable_data: ET.Element, period_data: ET.Element) -> list[Week]
     week_counter = 1
     for week in track(weeks_list, description="Converting Weeks..."):
         day_names = cycle(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"])
-        days_list: list[Day] = []
+        days_list: dict[str, Day] = {}
         for day in week:
             classes: list[Period] = []
             for period_time, period_class in day.items():
@@ -37,13 +37,14 @@ def timetable(timetable_data: ET.Element, period_data: ET.Element) -> list[Week]
                     continue
                 period = Period(period_time=period_time, class_name=period_class)
                 classes.append(period)
+            weekday = next(day_names)
             day = Day(
-                name=next(day_names),
+                name=weekday,
                 start=classes[0].period_time,
                 end=classes[-1].period_time,
                 periods=classes,
             )
-            days_list.append(day)
+            days_list[weekday] = day
 
         week = Week(week_number=week_counter, days=days_list)
         weeks.append(week)

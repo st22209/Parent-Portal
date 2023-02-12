@@ -5,6 +5,7 @@ import typer
 from rich import print
 from dotenv import load_dotenv
 
+from core.models import Weekdays
 from core.parse import timetable
 from core.consts import CACHE_DIR
 from core.http import ParentPortal
@@ -25,15 +26,22 @@ app = typer.Typer()
 
 
 @app.command("timetable-to-json")
-def timetable_json():
+def timetable_to_json():
     p = get_portal()
     timetable(p.timetable(), p.periods())
 
+    print(
+        f"[green]Timetable converted to json and saved to: {os.path.join(CACHE_DIR, 'timetable.json')}"
+    )
 
-@app.command("timetable")
-def timetable_table(
+
+@app.command("timetable-json")
+def timetable_json(
     week: int = typer.Option(
         ..., help="The number of the week you want the timetable for"
+    ),
+    day: Weekdays = typer.Option(
+        None,
     ),
 ):
     print(f"[bold blue]Showing timetable for W{week}:")
@@ -51,7 +59,9 @@ def timetable_table(
     except KeyError:
         return print(f"[bold red]Timetable data for week {week} was not found")
 
-    print(week_data)
+    if day is None:
+        return print(week_data)
+    print(week_data["days"][day.value])
 
 
 @app.command()
