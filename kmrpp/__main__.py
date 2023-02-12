@@ -8,10 +8,11 @@ from rich import print
 from rich.table import Table
 from dotenv import load_dotenv
 
-from core.models import Weekdays
-from core.parse import timetable
-from core.consts import CACHE_DIR
-from core.http import ParentPortal
+from kmrpp.core.models import Weekdays
+from kmrpp.core.parse import timetable
+from kmrpp.core.consts import CACHE_DIR
+from kmrpp.core.http import ParentPortal
+
 
 def get_portal() -> ParentPortal:
     load_dotenv()

@@ -5,8 +5,8 @@ import xml.etree.ElementTree as ET
 
 from rich.progress import track
 
-from core.consts import CACHE_DIR
-from core.models import Week, Day, Period
+from kmrpp.core.consts import CACHE_DIR
+from kmrpp.core.models import Week, Day, Period
 
 
 def periods(start_times: ET.Element) -> list[list[str | None]]:

@@ -3,8 +3,8 @@ from setuptools import setup, find_packages
 
 
 PATH = os.path.dirname(__file__)
-readme = open(os.path.join(PATH, "../README.md")).read()
-requirements = open("../requirements.txt").read().split("\n")
+readme = open(os.path.join(PATH, "README.md")).read()
+requirements = open("requirements.txt").read().split("\n")
 
 setup(
     url="https://github.com/st22209/Parent-Portal",

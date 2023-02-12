@@ -4,8 +4,8 @@ import xml.etree.ElementTree as ET
 
 import requests
 
-from core.consts import BASE_URL, DEFAULT_HEADERS, CACHE_DIR
-from core.exceptions import FailedToLogin, FailedToFetchTimetable
+from kmrpp.core.consts import BASE_URL, DEFAULT_HEADERS, CACHE_DIR
+from kmrpp.core.exceptions import FailedToLogin, FailedToFetchTimetable
 
 
 class Singleton(type):
