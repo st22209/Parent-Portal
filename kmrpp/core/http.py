@@ -84,9 +84,39 @@ class ParentPortal(metaclass=Singleton):
                 f.write(periods_response.text)
 
         if (start_times := periods_parsed.find("StartTimes")) is None:
-            raise Exception("Smth went wrong idk tbh")
+            raise Exception("Failed to get periods")
 
         return start_times
+
+    def calendar(self, use_cache: bool = True) -> ET.Element:
+        cache_path = os.path.join(CACHE_DIR, "calendar.xml")
+        if use_cache and os.path.exists(cache_path):
+            print("Using cached calendar...")
+            tree = ET.parse(cache_path)
+            calendar_parsed = tree.getroot()
+        else:
+            print("Fetching calendar...")
+            data = {
+                "Command": "GetCalendar",
+                "Key": self.key,
+                "Year": "2023",
+            }
+
+            calendar_response = requests.post(
+                BASE_URL, headers=DEFAULT_HEADERS, data=data
+            )
+            if calendar_response.status_code != 200:
+                raise Exception("Failed to get calendar")
+
+            calendar_parsed = ET.fromstring(calendar_response.text)
+
+            with open(cache_path, "w") as f:
+                f.write(calendar_response.text)
+
+        if (days := calendar_parsed.find("Days")) is None:
+            raise Exception("Failed to get calendar")
+
+        return days
 
     def __login(self) -> str:
         data = {
