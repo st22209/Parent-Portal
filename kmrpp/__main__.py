@@ -1,11 +1,8 @@
 import os
 import json
-from datetime import datetime
 
 import typer
-from rich import box
 from rich import print
-from rich.table import Table
 from dotenv import load_dotenv
 
 from kmrpp.core.models import Weekdays
@@ -116,6 +113,12 @@ def login(
         f.write(f'USERNAME = "{username}"\nPASSWORD = "{password}"')
 
     print("[bold green]username and password successfully stored!")
+
+    # fetch data to cache
+    portal = get_portal()
+    portal.timetable(use_cache=False)
+    portal.periods(use_cache=False)
+    portal.calendar(use_cache=False)
 
 
 def main():
