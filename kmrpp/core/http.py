@@ -1,4 +1,5 @@
 import os
+from datetime import date
 from typing import Optional
 import xml.etree.ElementTree as ET
 
@@ -6,6 +7,8 @@ import requests
 
 from kmrpp.core.consts import BASE_URL, DEFAULT_HEADERS, CACHE_DIR
 from kmrpp.core.exceptions import FailedToLogin, FailedToFetchTimetable
+
+YEAR = date.today().year
 
 
 class Singleton(type):
@@ -37,7 +40,7 @@ class ParentPortal(metaclass=Singleton):
                 "Command": "GetStudentTimetable",
                 "Key": self.key,
                 "StudentID": self.username,
-                "Grid": "2023TT",
+                "Grid": f"{YEAR}TT",
             }
 
             timetable_response = requests.post(
@@ -99,7 +102,7 @@ class ParentPortal(metaclass=Singleton):
             data = {
                 "Command": "GetCalendar",
                 "Key": self.key,
-                "Year": "2023",
+                "Year": YEAR,
             }
 
             calendar_response = requests.post(
