@@ -1,15 +1,17 @@
 import os
 import json
+from datetime import datetime
 
 import typer
+from rich import box
 from rich import print
+from rich.table import Table
 from dotenv import load_dotenv
 
 from core.models import Weekdays
 from core.parse import timetable
 from core.consts import CACHE_DIR
 from core.http import ParentPortal
-
 
 def get_portal() -> ParentPortal:
     load_dotenv()
@@ -64,6 +66,62 @@ def timetable_json(
     print(week_data["days"][day.value])
 
 
+@app.command("timetable")
+def timetable_table(
+    week: int = typer.Option(
+        ..., help="The number of the week you want the timetable for"
+    ),
+):
+    path = os.path.join(CACHE_DIR, "timetable.json")
+    if not os.path.exists(path):
+        p = get_portal()
+        timetable(p.timetable(), p.periods())
+
+    with open(path) as f:
+        data = json.load(f)
+
+    try:
+        week_data = data[f"W{week}"]
+    except KeyError:
+        return print(f"[bold red]Timetable data for week {week} was not found")
+
+    weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+
+    table = Table(
+        title=f"[bold blue]Timetable - Week: {week}", box=box.HEAVY, show_lines=True
+    )
+    table.add_column("Time")
+    for dayname in weekdays:
+        table.add_column(dayname)
+
+    times = []
+    for day in week_data["days"].values():
+        for i in day["periods"]:
+            times.append(i["period_time"])
+    times = list(
+        map(
+            lambda x: datetime.strftime(x, "%H:%M"),
+            sorted(map(lambda x: datetime.strptime(x, "%H:%M"), set(times))),
+        )
+    )
+    row_data = {i: [] for i in times}
+    for k in row_data:
+        for data in week_data["days"].values():
+            found = False
+            for i in data["periods"]:
+                if i["period_time"] == k:
+                    row_data[k].append(" ".join(i["class_name"].split("-")[2:]))
+                    found = True
+            if not found:
+                row_data[k].append(None)
+    for ptime, pclass in row_data.items():
+        table.add_row(ptime, *pclass)
+    print(table)
+    print(
+        "[red]Empty boxes are most likely break, before/after school or the continuation of a class"
+    )
+
+
 @app.command()
 def login(
     username: str = typer.Option(
@@ -83,5 +141,9 @@ def login(
     print("[bold green]username and password successfully stored!")
 
 
-if __name__ == "__main__":
+def main():
     app()
+
+
+if __name__ == "__main__":
+    main()

@@ -1,4 +1,0 @@
-pydantic
-python-dotenv
-requests
-rich
