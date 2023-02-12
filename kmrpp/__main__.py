@@ -9,9 +9,9 @@ from rich.table import Table
 from dotenv import load_dotenv
 
 from kmrpp.core.models import Weekdays
-from kmrpp.core.parse import timetable
 from kmrpp.core.consts import CACHE_DIR
 from kmrpp.core.http import ParentPortal
+from kmrpp.core.parse import parse_timetable, timetable_to_table
 
 
 def get_portal() -> ParentPortal:
@@ -30,8 +30,10 @@ app = typer.Typer()
 
 @app.command("timetable-to-json")
 def timetable_to_json():
-    p = get_portal()
-    timetable(p.timetable(), p.periods())
+    portal = get_portal()
+    timetable_data = portal.timetable()
+    period_data = portal.periods()
+    parse_timetable(timetable_data, period_data)
 
     print(
         f"[green]Timetable converted to json and saved to: {os.path.join(CACHE_DIR, 'timetable.json')}"
@@ -51,8 +53,10 @@ def timetable_json(
 
     path = os.path.join(CACHE_DIR, "timetable.json")
     if not os.path.exists(path):
-        p = get_portal()
-        timetable(p.timetable(), p.periods())
+        portal = get_portal()
+        timetable_data = portal.timetable()
+        period_data = portal.periods()
+        parse_timetable(timetable_data, period_data)
 
     with open(path) as f:
         data = json.load(f)
@@ -75,8 +79,10 @@ def timetable_table(
 ):
     path = os.path.join(CACHE_DIR, "timetable.json")
     if not os.path.exists(path):
-        p = get_portal()
-        timetable(p.timetable(), p.periods())
+        portal = get_portal()
+        timetable_data = portal.timetable()
+        period_data = portal.periods()
+        parse_timetable(timetable_data, period_data)
 
     with open(path) as f:
         data = json.load(f)
@@ -86,37 +92,7 @@ def timetable_table(
     except KeyError:
         return print(f"[bold red]Timetable data for week {week} was not found")
 
-    weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
-
-    table = Table(
-        title=f"[bold blue]Timetable - Week: {week}", box=box.HEAVY, show_lines=True
-    )
-    table.add_column("Time")
-    for dayname in weekdays:
-        table.add_column(dayname)
-
-    times = []
-    for day in week_data["days"].values():
-        for i in day["periods"]:
-            times.append(i["period_time"])
-    times = list(
-        map(
-            lambda x: datetime.strftime(x, "%H:%M"),
-            sorted(map(lambda x: datetime.strptime(x, "%H:%M"), set(times))),
-        )
-    )
-    row_data = {i: [] for i in times}
-    for k in row_data:
-        for data in week_data["days"].values():
-            found = False
-            for i in data["periods"]:
-                if i["period_time"] == k:
-                    row_data[k].append(" ".join(i["class_name"].split("-")[2:]))
-                    found = True
-            if not found:
-                row_data[k].append(None)
-    for ptime, pclass in row_data.items():
-        table.add_row(ptime, *pclass)
+    table = timetable_to_table(week_data, week)
     print(table)
     print(
         "[red]Empty boxes are most likely break, before/after school or the continuation of a class"

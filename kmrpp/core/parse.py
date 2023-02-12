@@ -1,20 +1,24 @@
 import os
 import json
 from itertools import cycle
+from datetime import datetime
 import xml.etree.ElementTree as ET
 
+from rich import box
+from rich import print
+from rich.table import Table
 from rich.progress import track
 
 from kmrpp.core.consts import CACHE_DIR
 from kmrpp.core.models import Week, Day, Period
 
 
-def periods(start_times: ET.Element) -> list[list[str | None]]:
+def parse_periods(start_times: ET.Element) -> list[list[str | None]]:
     return [[period.text for period in day] for day in start_times]
 
 
-def timetable(timetable_data: ET.Element, period_data: ET.Element) -> list[Week]:
-    period_times = periods(period_data)
+def parse_timetable(timetable_data: ET.Element, period_data: ET.Element) -> list[Week]:
+    period_times = parse_periods(period_data)
 
     weeks_list: list[list[dict[str, str]]] = []
     for week in timetable_data[3:]:
@@ -56,3 +60,39 @@ def timetable(timetable_data: ET.Element, period_data: ET.Element) -> list[Week]
         json.dump(weeks_json, f, indent=4)
 
     return weeks
+
+
+def timetable_to_table(week_data: dict, week: int):
+    weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+
+    table = Table(
+        title=f"[bold blue]Timetable - Week: {week}", box=box.HEAVY, show_lines=True
+    )
+    table.add_column("Time")
+    for dayname in weekdays:
+        table.add_column(dayname)
+
+    times = []
+    for day in week_data["days"].values():
+        for i in day["periods"]:
+            times.append(i["period_time"])
+    times = list(
+        map(
+            lambda x: datetime.strftime(x, "%H:%M"),
+            sorted(map(lambda x: datetime.strptime(x, "%H:%M"), set(times))),
+        )
+    )
+    row_data = {i: [] for i in times}
+    for k in row_data:
+        for data in week_data["days"].values():
+            found = False
+            for i in data["periods"]:
+                if i["period_time"] == k:
+                    row_data[k].append(" ".join(i["class_name"].split("-")[2:]))
+                    found = True
+            if not found:
+                row_data[k].append(None)
+    for ptime, pclass in row_data.items():
+        table.add_row(ptime, *pclass)
+
+    return table
