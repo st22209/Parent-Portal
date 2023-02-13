@@ -96,3 +96,16 @@ def timetable_to_table(week_data: dict, week: int):
         table.add_row(ptime, *pclass)
 
     return table
+
+
+def parse_calendar(calendar_data: ET.Element):
+    days = {
+        day.find("Date").text: {  # type: ignore
+            "status": day.find("Status").text,  # type: ignore
+            "week": day.find("WeekYear").text,  # type: ignore
+            "term": day.find("Term").text,  # type: ignore
+            "term_week": day.find("Week").text,  # type: ignore
+        }
+        for day in calendar_data
+    }
+    return days
