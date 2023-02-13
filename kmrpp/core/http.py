@@ -22,10 +22,16 @@ class Singleton(type):
 
 
 class ParentPortal(metaclass=Singleton):
-    def __init__(self, username: str, password: str, key: Optional[str] = None) -> None:
+    def __init__(
+        self,
+        username: str,
+        password: str,
+        key: Optional[str] = None,
+        url: Optional[str] = None,
+    ) -> None:
         self.username = username
         self.password = password
-
+        self.api_url = BASE_URL if url is None else url
         self.key = self.__login() if key is None else key
 
     def timetable(self, use_cache: bool = True) -> ET.Element:
@@ -45,7 +51,7 @@ class ParentPortal(metaclass=Singleton):
             }
 
             timetable_response = requests.post(
-                BASE_URL, headers=DEFAULT_HEADERS, data=data
+                self.api_url, headers=DEFAULT_HEADERS, data=data
             )
             if timetable_response.status_code != 200:
                 raise FailedToFetchTimetable
@@ -77,7 +83,7 @@ class ParentPortal(metaclass=Singleton):
             }
 
             periods_response = requests.post(
-                BASE_URL, headers=DEFAULT_HEADERS, data=data
+                self.api_url, headers=DEFAULT_HEADERS, data=data
             )
             if periods_response.status_code != 200:
                 raise Exception("Failed to get periods")
@@ -107,7 +113,7 @@ class ParentPortal(metaclass=Singleton):
             }
 
             calendar_response = requests.post(
-                BASE_URL, headers=DEFAULT_HEADERS, data=data
+                self.api_url, headers=DEFAULT_HEADERS, data=data
             )
             if calendar_response.status_code != 200:
                 raise Exception("Failed to get calendar")
@@ -130,7 +136,7 @@ class ParentPortal(metaclass=Singleton):
             "Password": self.password,
         }
 
-        login_response = requests.post(BASE_URL, headers=DEFAULT_HEADERS, data=data)
+        login_response = requests.post(self.api_url, headers=DEFAULT_HEADERS, data=data)
         if login_response.status_code != 200:
             raise FailedToLogin(login_response.text)
 
