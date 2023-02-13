@@ -1,5 +1,6 @@
 import os
 import json
+from datetime import datetime
 
 import typer
 from rich import print
@@ -9,7 +10,7 @@ from dotenv import load_dotenv
 from kmrpp.core.models import Weekdays
 from kmrpp.core.consts import CACHE_DIR
 from kmrpp.core.http import ParentPortal
-from kmrpp.core.parse import parse_timetable, timetable_to_table
+from kmrpp.core.parse import parse_timetable, timetable_to_table, parse_calendar
 
 
 def get_portal() -> ParentPortal:
@@ -23,7 +24,13 @@ def get_portal() -> ParentPortal:
     return ParentPortal(username, password)
 
 
+def get_current_week():
+    today = datetime.today()
+    print(today.strftime("%Y-%m-%d"))
+
+
 app = typer.Typer()
+get_current_week()
 
 
 @app.command(
@@ -86,22 +93,35 @@ def timetable_table(
         True, help="If this option is used it will refetch data instead of using cache"
     ),
 ):
-    path = os.path.join(CACHE_DIR, "timetable.json")
-    if not os.path.exists(path) or cache is False:
-        portal = get_portal()
+    timetable_path = os.path.join(CACHE_DIR, "timetable.json")
+    portal = get_portal()
+    if not os.path.exists(timetable_path) or not cache:
         timetable_data = portal.timetable(cache)
         period_data = portal.periods(cache)
         parse_timetable(timetable_data, period_data)
 
-    with open(path) as f:
-        data = json.load(f)
+    with open(timetable_path) as f:
+        timetable_data = json.load(f)
+
+    calendar_path = os.path.join(CACHE_DIR, "calendar.json")
+    if not os.path.exists(calendar_path) or not cache:
+        calendar_data = portal.calendar(cache)
+        parse_calendar(calendar_data)
+
+    with open(calendar_path) as f:
+        calendar_data = json.load(f)
 
     try:
-        week_data = data[f"W{week}"]
+        week_data = timetable_data[f"W{week}"]
+    except KeyError:
+        return print(f"[bold red]Timetable data for week {week} was not found")
+    try:
+        calendar_data = calendar_data["weeks"][str(week)]
     except KeyError:
         return print(f"[bold red]Timetable data for week {week} was not found")
 
-    table = timetable_to_table(week_data, week)
+    dates = [i["date"] for i in calendar_data][1:-1]
+    table = timetable_to_table(week_data, week, dates)
     print(table)
     print(
         "[red]Empty boxes are most likely break, before/after school or the continuation of a class"

@@ -1,3 +1,5 @@
+# type: ignore
+
 import os
 import json
 from itertools import cycle
@@ -22,7 +24,7 @@ def parse_timetable(timetable_data: ET.Element, period_data: ET.Element) -> list
 
     weeks_list: list[list[dict[str, str]]] = []
     for week in timetable_data[3:]:
-        classes_per_day = [i.text.strip().split("|")[1:-1] for i in week]  # type: ignore
+        classes_per_day = [i.text.strip().split("|")[1:-1] for i in week]
         days = zip(period_times, classes_per_day)
         days = list(map(lambda day: dict(zip(*day)), days))
         weeks_list.append(days)
@@ -31,7 +33,7 @@ def parse_timetable(timetable_data: ET.Element, period_data: ET.Element) -> list
     weeks_json = {}
 
     week_counter = 1
-    for week in track(weeks_list, description="[b green]✓ Converting Weeks..."):
+    for week in track(weeks_list, description="Converting Weeks..."):
         day_names = cycle(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"])
         days_list: dict[str, Day] = {}
         for day in week:
@@ -62,15 +64,15 @@ def parse_timetable(timetable_data: ET.Element, period_data: ET.Element) -> list
     return weeks
 
 
-def timetable_to_table(week_data: dict, week: int):
+def timetable_to_table(week_data: dict, week: int, dates: list[str]):
     weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
 
     table = Table(
         title=f"[bold blue]Timetable - Week: {week}", box=box.HEAVY, show_lines=True
     )
     table.add_column("Time")
-    for dayname in weekdays:
-        table.add_column(dayname)
+    for dayname, date in zip(weekdays, dates):
+        table.add_column(f"{dayname} ({'/'.join(date.split('-')[1:][::-1])})")
 
     times = []
     for day in week_data["days"].values():
@@ -88,7 +90,12 @@ def timetable_to_table(week_data: dict, week: int):
             found = False
             for i in data["periods"]:
                 if i["period_time"] == k:
-                    row_data[k].append(" ".join(i["class_name"].split("-")[2:]))
+                    rdata = i["class_name"].split("-")[2:]
+                    if rdata:
+                        c, t, p = rdata
+                        row_data[k].append(f"{c} - {t} - {p}")
+                    else:
+                        row_data[k].append("")
                     found = True
             if not found:
                 row_data[k].append(None)
@@ -99,13 +106,35 @@ def timetable_to_table(week_data: dict, week: int):
 
 
 def parse_calendar(calendar_data: ET.Element):
-    days = {
-        day.find("Date").text: {  # type: ignore
-            "status": day.find("Status").text,  # type: ignore
-            "week": day.find("WeekYear").text,  # type: ignore
-            "term": day.find("Term").text,  # type: ignore
-            "term_week": day.find("Week").text,  # type: ignore
+    data = {"days": {}, "weeks": {}}
+
+    for day in calendar_data:
+        data["days"][day.find("Date").text] = {
+            "status": day.find("Status").text,
+            "week": day.find("WeekYear").text,
+            "term": day.find("Term").text,
+            "weekday": day.find("DayTT").text,
+            "term_week": day.find("Week").text,
         }
-        for day in calendar_data
-    }
-    return days
+
+        if (week := day.find("WeekYear").text) is None:
+            continue
+
+        if data["weeks"].get(week) is None:
+            data["weeks"][week] = []
+
+        data["weeks"][week].append(
+            {
+                "date": day.find("Date").text,
+                "status": day.find("Status").text,
+                "term": day.find("Term").text,
+                "weekday": day.find("DayTT").text,
+                "term_week": day.find("Week").text,
+            }
+        )
+
+    with open(os.path.join(CACHE_DIR, "calendar.json"), "w") as f:
+        print("[b green]✓ Calendar saved as JSON")
+        json.dump(data, f, indent=4)
+
+    return data
