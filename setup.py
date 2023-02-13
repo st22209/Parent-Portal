@@ -9,7 +9,7 @@ requirements = open("requirements.txt").read().split("\n")
 setup(
     url="https://github.com/st22209/Parent-Portal",
     author="FusionSid",
-    version="0.0.1",
+    version="0.0.2",
     name="kmrpp",
     description="(unofficial) cli tool to use parent portal in the terminal",
     install_requires=requirements,

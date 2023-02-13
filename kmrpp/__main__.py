@@ -3,6 +3,7 @@ import json
 
 import typer
 from rich import print
+from rich.json import JSON
 from dotenv import load_dotenv
 
 from kmrpp.core.models import Weekdays
@@ -25,7 +26,11 @@ def get_portal() -> ParentPortal:
 app = typer.Typer()
 
 
-@app.command("timetable-to-json")
+@app.command(
+    "timetable-to-json",
+    hidden=True,
+    help="Convert entire terminal to json and give link to file",
+)
 def timetable_to_json():
     portal = get_portal()
     timetable_data = portal.timetable()
@@ -33,26 +38,30 @@ def timetable_to_json():
     parse_timetable(timetable_data, period_data)
 
     print(
-        f"[green]Timetable converted to json and saved to: {os.path.join(CACHE_DIR, 'timetable.json')}"
+        f"[green]Timetable converted to json and saved to: {os.path.join(CACHE_DIR, 'timetable.json')} :tick:"
     )
 
 
-@app.command("timetable-json")
+@app.command("timetable-json", help="View timetable in json format")
 def timetable_json(
     week: int = typer.Option(
         ..., help="The number of the week you want the timetable for"
     ),
     day: Weekdays = typer.Option(
         None,
+        autocompletion=lambda: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+    ),
+    cache: bool = typer.Option(
+        True, help="If set to true, it will refetch data instead of using cache"
     ),
 ):
     print(f"[bold blue]Showing timetable for W{week}:")
 
     path = os.path.join(CACHE_DIR, "timetable.json")
-    if not os.path.exists(path):
+    if not os.path.exists(path) or cache is False:
         portal = get_portal()
-        timetable_data = portal.timetable()
-        period_data = portal.periods()
+        timetable_data = portal.timetable(cache)
+        period_data = portal.periods(cache)
         parse_timetable(timetable_data, period_data)
 
     with open(path) as f:
@@ -64,21 +73,24 @@ def timetable_json(
         return print(f"[bold red]Timetable data for week {week} was not found")
 
     if day is None:
-        return print(week_data)
-    print(week_data["days"][day.value])
+        return print(JSON(json.dumps(week_data)))
+    print(JSON(json.dumps(week_data["days"][day.value])))
 
 
-@app.command("timetable")
+@app.command("timetable", help="View you timetable as a Table")
 def timetable_table(
     week: int = typer.Option(
         ..., help="The number of the week you want the timetable for"
     ),
+    cache: bool = typer.Option(
+        True, help="If this option is used it will refetch data instead of using cache"
+    ),
 ):
     path = os.path.join(CACHE_DIR, "timetable.json")
-    if not os.path.exists(path):
+    if not os.path.exists(path) or cache is False:
         portal = get_portal()
-        timetable_data = portal.timetable()
-        period_data = portal.periods()
+        timetable_data = portal.timetable(cache)
+        period_data = portal.periods(cache)
         parse_timetable(timetable_data, period_data)
 
     with open(path) as f:
@@ -96,7 +108,7 @@ def timetable_table(
     )
 
 
-@app.command()
+@app.command(help="Command to log you into parent portal")
 def login(
     username: str = typer.Option(
         ..., help="The username that you use on parent portal"
