@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from kmrpp.core.models import Weekdays
 from kmrpp.core.consts import CACHE_DIR
 from kmrpp.core.http import ParentPortal
+from kmrpp.core.exceptions import NoLoginDetails
 from kmrpp.core.parse import parse_timetable, timetable_to_table, parse_calendar
 
 
@@ -20,17 +21,11 @@ def get_portal() -> ParentPortal:
     password = os.environ.get("PASSWORD")
 
     if username is None or password is None:
-        raise Exception("Please set username and password with login command")
+        raise NoLoginDetails
     return ParentPortal(username, password)
 
 
-def get_current_week():
-    today = datetime.today()
-    print(today.strftime("%Y-%m-%d"))
-
-
 app = typer.Typer()
-get_current_week()
 
 
 @app.command(
@@ -87,7 +82,7 @@ def timetable_json(
 @app.command("timetable", help="View you timetable as a Table")
 def timetable_table(
     week: int = typer.Option(
-        ..., help="The number of the week you want the timetable for"
+        None, help="The number of the week you want the timetable for"
     ),
     cache: bool = typer.Option(
         True, help="If this option is used it will refetch data instead of using cache"
@@ -110,6 +105,16 @@ def timetable_table(
 
     with open(calendar_path) as f:
         calendar_data = json.load(f)
+
+    if week is None:
+        today = datetime.today()
+        date = today.strftime("%Y-%m-%d")
+        day_data = calendar_data["days"].get(date)
+        if day_data is None or day_data.get("week") is None:
+            return print(
+                f"[bold red]Was not able to get current week!\nPlease specify week with [blue]`--week`"
+            )
+        week = day_data["week"]
 
     try:
         week_data = timetable_data[f"W{week}"]
@@ -144,7 +149,7 @@ def login(
     with open(os.path.join(os.path.dirname(__file__), "..", ".env"), "w") as f:
         f.write(f'USERNAME = "{username}"\nPASSWORD = "{password}"')
 
-    print("[bold green]username and password successfully stored!")
+    print("[bold green]Username and Password successfully stored!")
 
     # fetch data to cache
     portal = get_portal()
