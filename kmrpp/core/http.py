@@ -6,8 +6,8 @@ import xml.etree.ElementTree as ET
 import requests
 from rich import print
 
+from kmrpp.core.exceptions import FailedToLogin, FailedToFetch
 from kmrpp.core.consts import BASE_URL, DEFAULT_HEADERS, CACHE_DIR
-from kmrpp.core.exceptions import FailedToLogin, FailedToFetchTimetable
 
 YEAR = date.today().year
 
@@ -54,7 +54,7 @@ class ParentPortal(metaclass=Singleton):
                 self.api_url, headers=DEFAULT_HEADERS, data=data
             )
             if timetable_response.status_code != 200:
-                raise FailedToFetchTimetable
+                raise FailedToFetch("Timetable")
 
             timetable_response_parsed = ET.fromstring(timetable_response.text)
 
@@ -63,9 +63,9 @@ class ParentPortal(metaclass=Singleton):
                 f.write(timetable_response.text)
 
         if (students_tag := timetable_response_parsed.find("Students")) is None:
-            raise FailedToFetchTimetable
+            raise FailedToFetch("Timetable")
         if (timetable_data := students_tag[0].find("TimetableData")) is None:
-            raise FailedToFetchTimetable
+            raise FailedToFetch("Timetable")
 
         return timetable_data
 
@@ -86,7 +86,7 @@ class ParentPortal(metaclass=Singleton):
                 self.api_url, headers=DEFAULT_HEADERS, data=data
             )
             if periods_response.status_code != 200:
-                raise Exception("Failed to get periods")
+                raise FailedToFetch("Periods")
 
             periods_parsed = ET.fromstring(periods_response.text)
 
@@ -94,7 +94,7 @@ class ParentPortal(metaclass=Singleton):
                 f.write(periods_response.text)
 
         if (start_times := periods_parsed.find("StartTimes")) is None:
-            raise Exception("Failed to get periods")
+            raise FailedToFetch("Periods")
 
         return start_times
 
@@ -116,7 +116,7 @@ class ParentPortal(metaclass=Singleton):
                 self.api_url, headers=DEFAULT_HEADERS, data=data
             )
             if calendar_response.status_code != 200:
-                raise Exception("Failed to get calendar")
+                raise FailedToFetch("Calendar")
 
             calendar_parsed = ET.fromstring(calendar_response.text)
 
@@ -124,7 +124,7 @@ class ParentPortal(metaclass=Singleton):
                 f.write(calendar_response.text)
 
         if (days := calendar_parsed.find("Days")) is None:
-            raise Exception("Failed to get calendar")
+            raise FailedToFetch("Calendar")
 
         return days
 
