@@ -22,6 +22,7 @@ class RichBaseException(BaseException):
             border_style="red",
         )
         Console().print(error_message, justify="left")
+        exit(1)
 
 
 class FailedToLogin(RichBaseException):
@@ -32,9 +33,17 @@ class FailedToLogin(RichBaseException):
         )
 
 
-class FailedToFetchTimetable(RichBaseException):
+class NoLoginDetails(RichBaseException):
     def __init__(self) -> None:
         super().__init__(
-            "Failed To Get Timetable!",
-            "Timetable could not be fetched for unknown reasons",
+            "Could not find login details!",
+            "Please set the username and password with the login command\nExample: [blue]kmr login --username person123",
+        )
+
+
+class FailedToFetch(RichBaseException):
+    def __init__(self, thing: str) -> None:
+        super().__init__(
+            "Failed To Get {}!",
+            "{} could not be fetched for unknown reasons",
         )
