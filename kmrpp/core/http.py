@@ -4,6 +4,7 @@ from typing import Optional
 import xml.etree.ElementTree as ET
 
 import requests
+from rich import print
 
 from kmrpp.core.consts import BASE_URL, DEFAULT_HEADERS, CACHE_DIR
 from kmrpp.core.exceptions import FailedToLogin, FailedToFetchTimetable
@@ -31,11 +32,11 @@ class ParentPortal(metaclass=Singleton):
         cache_path = os.path.join(CACHE_DIR, "timetable.xml")
 
         if use_cache and os.path.exists(cache_path):
-            print("Using cached timetable...")
+            print("[b green]✓ Using cached timetable...")
             tree = ET.parse(cache_path)
             timetable_response_parsed = tree.getroot()
         else:
-            print("Fetching timetable...")
+            print("[b green]✓ Fetching timetable...")
             data = {
                 "Command": "GetStudentTimetable",
                 "Key": self.key,
@@ -65,11 +66,11 @@ class ParentPortal(metaclass=Singleton):
     def periods(self, use_cache: bool = True) -> ET.Element:
         cache_path = os.path.join(CACHE_DIR, "periods.xml")
         if use_cache and os.path.exists(cache_path):
-            print("Using cached periods...")
+            print("[b green]✓ Using cached periods...")
             tree = ET.parse(cache_path)
             periods_parsed = tree.getroot()
         else:
-            print("Fetching periods...")
+            print("[b green]✓ Fetching periods...")
             data = {
                 "Command": "GetGlobals",
                 "Key": self.key,
@@ -94,11 +95,11 @@ class ParentPortal(metaclass=Singleton):
     def calendar(self, use_cache: bool = True) -> ET.Element:
         cache_path = os.path.join(CACHE_DIR, "calendar.xml")
         if use_cache and os.path.exists(cache_path):
-            print("Using cached calendar...")
+            print("[b green]✓ Using cached calendar...")
             tree = ET.parse(cache_path)
             calendar_parsed = tree.getroot()
         else:
-            print("Fetching calendar...")
+            print("[b green]✓ Fetching calendar...")
             data = {
                 "Command": "GetCalendar",
                 "Key": self.key,

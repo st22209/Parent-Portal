@@ -31,7 +31,7 @@ def parse_timetable(timetable_data: ET.Element, period_data: ET.Element) -> list
     weeks_json = {}
 
     week_counter = 1
-    for week in track(weeks_list, description="Converting Weeks..."):
+    for week in track(weeks_list, description="[b green]✓ Converting Weeks..."):
         day_names = cycle(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"])
         days_list: dict[str, Day] = {}
         for day in week:
@@ -56,7 +56,7 @@ def parse_timetable(timetable_data: ET.Element, period_data: ET.Element) -> list
         week_counter += 1
 
     with open(os.path.join(CACHE_DIR, "timetable.json"), "w") as f:
-        print("timetable saved as json")
+        print("[b green]✓ Timetable saved as JSON")
         json.dump(weeks_json, f, indent=4)
 
     return weeks
