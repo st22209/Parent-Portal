@@ -1,5 +1,3 @@
-# type: ignore
-
 import os
 import json
 from itertools import cycle
@@ -24,7 +22,7 @@ def parse_timetable(timetable_data: ET.Element, period_data: ET.Element) -> list
 
     weeks_list: list[list[dict[str, str]]] = []
     for week in timetable_data[3:]:
-        classes_per_day = [i.text.strip().split("|")[1:-1] for i in week]
+        classes_per_day = [i.text.strip().split("|")[1:-1] for i in week]  # type: ignore
         days = zip(period_times, classes_per_day)
         days = list(map(lambda day: dict(zip(*day)), days))
         weeks_list.append(days)
@@ -64,15 +62,15 @@ def parse_timetable(timetable_data: ET.Element, period_data: ET.Element) -> list
     return weeks
 
 
-def timetable_to_table(week_data: dict, week: int, dates: list[str]):
+def timetable_to_table(week_data: dict, week: int):
     weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
 
     table = Table(
         title=f"[bold blue]Timetable - Week: {week}", box=box.HEAVY, show_lines=True
     )
     table.add_column("Time")
-    for dayname, date in zip(weekdays, dates):
-        table.add_column(f"{dayname} ({'/'.join(date.split('-')[1:][::-1])})")
+    for dayname in weekdays:
+        table.add_column(dayname)
 
     times = []
     for day in week_data["days"].values():
@@ -90,12 +88,7 @@ def timetable_to_table(week_data: dict, week: int, dates: list[str]):
             found = False
             for i in data["periods"]:
                 if i["period_time"] == k:
-                    rdata = i["class_name"].split("-")[2:]
-                    if rdata:
-                        c, t, p = rdata
-                        row_data[k].append(f"{c} - {t} - {p}")
-                    else:
-                        row_data[k].append("")
+                    row_data[k].append(" ".join(i["class_name"].split("-")[2:]))
                     found = True
             if not found:
                 row_data[k].append(None)
@@ -106,35 +99,13 @@ def timetable_to_table(week_data: dict, week: int, dates: list[str]):
 
 
 def parse_calendar(calendar_data: ET.Element):
-    data = {"days": {}, "weeks": {}}
-
-    for day in calendar_data:
-        data["days"][day.find("Date").text] = {
-            "status": day.find("Status").text,
-            "week": day.find("WeekYear").text,
-            "term": day.find("Term").text,
-            "weekday": day.find("DayTT").text,
-            "term_week": day.find("Week").text,
+    days = {
+        day.find("Date").text: {  # type: ignore
+            "status": day.find("Status").text,  # type: ignore
+            "week": day.find("WeekYear").text,  # type: ignore
+            "term": day.find("Term").text,  # type: ignore
+            "term_week": day.find("Week").text,  # type: ignore
         }
-
-        if (week := day.find("WeekYear").text) is None:
-            continue
-
-        if data["weeks"].get(week) is None:
-            data["weeks"][week] = []
-
-        data["weeks"][week].append(
-            {
-                "date": day.find("Date").text,
-                "status": day.find("Status").text,
-                "term": day.find("Term").text,
-                "weekday": day.find("DayTT").text,
-                "term_week": day.find("Week").text,
-            }
-        )
-
-    with open(os.path.join(CACHE_DIR, "calendar.json"), "w") as f:
-        print("calendar saved as json")
-        json.dump(data, f, indent=4)
-
-    return data
+        for day in calendar_data
+    }
+    return days
