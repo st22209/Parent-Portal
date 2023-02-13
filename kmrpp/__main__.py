@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from kmrpp.core.models import Weekdays
 from kmrpp.core.consts import CACHE_DIR
 from kmrpp.core.http import ParentPortal
-from kmrpp.core.parse import parse_timetable, timetable_to_table
+from kmrpp.core.parse import parse_timetable, timetable_to_table, parse_calendar
 
 
 def get_portal() -> ParentPortal:
@@ -74,22 +74,35 @@ def timetable_table(
         ..., help="The number of the week you want the timetable for"
     ),
 ):
-    path = os.path.join(CACHE_DIR, "timetable.json")
-    if not os.path.exists(path):
-        portal = get_portal()
+    timetable_path = os.path.join(CACHE_DIR, "timetable.json")
+    portal = get_portal()
+    if not os.path.exists(timetable_path):
         timetable_data = portal.timetable()
         period_data = portal.periods()
         parse_timetable(timetable_data, period_data)
 
-    with open(path) as f:
-        data = json.load(f)
+    with open(timetable_path) as f:
+        timetable_data = json.load(f)
+
+    calendar_path = os.path.join(CACHE_DIR, "calendar.json")
+    if not os.path.exists(calendar_path):
+        calendar_data = portal.calendar()
+        parse_calendar(calendar_data)
+
+    with open(calendar_path) as f:
+        calendar_data = json.load(f)
 
     try:
-        week_data = data[f"W{week}"]
+        week_data = timetable_data[f"W{week}"]
+    except KeyError:
+        return print(f"[bold red]Timetable data for week {week} was not found")
+    try:
+        calendar_data = calendar_data["weeks"][str(week)]
     except KeyError:
         return print(f"[bold red]Timetable data for week {week} was not found")
 
-    table = timetable_to_table(week_data, week)
+    dates = [i["date"] for i in calendar_data][1:-1]
+    table = timetable_to_table(week_data, week, dates)
     print(table)
     print(
         "[red]Empty boxes are most likely break, before/after school or the continuation of a class"
