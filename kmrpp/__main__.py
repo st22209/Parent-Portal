@@ -18,8 +18,18 @@ from kmrpp.core.exceptions import NoLoginDetails
 from kmrpp.core.parse import parse_timetable, timetable_to_table, parse_calendar
 
 
+load_dotenv()
+
+
 def get_portal() -> ParentPortal:
-    load_dotenv()
+    """
+    Get login details and use them to return the ParentPortal singleton object
+
+    Returns:
+        ParentPortal: The object used to carry out http requets to the api
+    Raises:
+        NoLoginDetails: If login details are not found
+    """
 
     username = os.environ.get("USERNAME")
     password = os.environ.get("PASSWORD")

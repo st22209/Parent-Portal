@@ -18,11 +18,24 @@ from kmrpp.core.consts import CACHE_DIR
 from kmrpp.core.models import Week, Day, Period
 
 
-def parse_periods(start_times: ET.Element) -> list[list[str | None]]:
+def parse_periods(start_times: ET.Element) -> list[list[str]]:
+    """
+    This function parses periods from xml to a python list
+
+    Returns:
+        list[list[str]]: The start times for all periods
+    """
     return [[period.text for period in day] for day in start_times]
 
 
 def parse_timetable(timetable_data: ET.Element, period_data: ET.Element) -> list[Week]:
+    """
+    This function parses the xml timetable and period data into a list of Week objects
+    It also converts the data into json which is stored in the cache dir
+
+    Returns:
+        list[Week]: A list of week objects
+    """
     period_times = parse_periods(period_data)
 
     weeks_list: list[list[dict[str, str]]] = []
@@ -67,7 +80,14 @@ def parse_timetable(timetable_data: ET.Element, period_data: ET.Element) -> list
     return weeks
 
 
-def timetable_to_table(week_data: dict, week: int, dates: list[str]):
+def timetable_to_table(week_data: dict, week: int, dates: list[str]) -> Table:
+    """
+    This function converts json data about the weeks timetable to a table
+    This table will be rendered by rich to the terminal
+
+    Returns:
+        rich.Table: The table object
+    """
     weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
 
     table = Table(
@@ -108,7 +128,10 @@ def timetable_to_table(week_data: dict, week: int, dates: list[str]):
     return table
 
 
-def parse_calendar(calendar_data: ET.Element):
+def parse_calendar(calendar_data: ET.Element) -> None:
+    """
+    This function parses the calendar and saves it as JSON in the cache dir
+    """
     data = {"days": {}, "weeks": {}}
 
     for day in calendar_data:

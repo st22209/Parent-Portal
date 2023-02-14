@@ -30,6 +30,10 @@ class RichBaseException(BaseException):
 
 
 class FailedToLogin(RichBaseException):
+    """
+    Raised when the script fails to login
+    """
+
     def __init__(self, api_response: str) -> None:
         super().__init__(
             "Failed To Login!",
@@ -38,6 +42,10 @@ class FailedToLogin(RichBaseException):
 
 
 class NoLoginDetails(RichBaseException):
+    """
+    Raised when login details could not be found
+    """
+
     def __init__(self) -> None:
         super().__init__(
             "Could not find login details!",
@@ -46,8 +54,12 @@ class NoLoginDetails(RichBaseException):
 
 
 class FailedToFetch(RichBaseException):
+    """
+    Raised when the app fails to fetch data
+    """
+
     def __init__(self, thing: str) -> None:
         super().__init__(
-            "Failed To Get {}!",
-            "{} could not be fetched for unknown reasons",
+            f"Failed To Get {thing}!",
+            f"{thing} could not be fetched for unknown reasons",
         )

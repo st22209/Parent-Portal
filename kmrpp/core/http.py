@@ -26,6 +26,10 @@ class Singleton(type):
 
 
 class ParentPortal(metaclass=Singleton):
+    """
+    An object to make requests to the parent portal api
+    """
+
     def __init__(
         self,
         username: str,
@@ -39,6 +43,19 @@ class ParentPortal(metaclass=Singleton):
         self.key = self.__login() if key is None else key
 
     def timetable(self, use_cache: bool = True) -> ET.Element:
+        """
+        Get timetable data from api
+
+        Parameters:
+            use_cache (bool): If set to false it will fetch data from the api
+                if set to true (which is the default) it will use the cached data instead (if cache exists)
+        Returns:
+            xml.etree.ElementTree.Element: An xml element of the data returned from the api
+
+        Raises:
+            FailedToFetch: If it was unable to get the data
+        """
+
         cache_path = os.path.join(CACHE_DIR, "timetable.xml")
 
         if use_cache and os.path.exists(cache_path):
@@ -74,6 +91,19 @@ class ParentPortal(metaclass=Singleton):
         return timetable_data
 
     def periods(self, use_cache: bool = True) -> ET.Element:
+        """
+        Get periods data from api
+
+        Parameters:
+            use_cache (bool): If set to false it will fetch data from the api
+                if set to true (which is the default) it will use the cached data instead (if cache exists)
+        Returns:
+            xml.etree.ElementTree.Element: An xml element of the data returned from the api
+
+        Raises:
+            FailedToFetch: If it was unable to get the data
+        """
+
         cache_path = os.path.join(CACHE_DIR, "periods.xml")
         if use_cache and os.path.exists(cache_path):
             print("[b green]✓ Using cached periods...")
@@ -103,6 +133,19 @@ class ParentPortal(metaclass=Singleton):
         return start_times
 
     def calendar(self, use_cache: bool = True) -> ET.Element:
+        """
+        Get calendar data from api
+
+        Parameters:
+            use_cache (bool): If set to false it will fetch data from the api
+                if set to true (which is the default) it will use the cached data instead (if cache exists)
+        Returns:
+            xml.etree.ElementTree.Element: An xml element of the data returned from the api
+
+        Raises:
+            FailedToFetch: If it was unable to get the data
+        """
+
         cache_path = os.path.join(CACHE_DIR, "calendar.xml")
         if use_cache and os.path.exists(cache_path):
             print("[b green]✓ Using cached calendar...")
@@ -133,6 +176,15 @@ class ParentPortal(metaclass=Singleton):
         return days
 
     def __login(self) -> str:
+        """
+        Login to api and get authentication key
+
+        Returns:
+            str: The authentication key
+        Raises:
+            FailedToLogin: If it was unable to get the auth key
+        """
+
         data = {
             "Command": "Logon",
             "Key": "vtku",
