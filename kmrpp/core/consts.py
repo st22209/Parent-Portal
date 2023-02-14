@@ -1,3 +1,7 @@
+""" (module) consts
+This module contains some constant values that are used in other files
+"""
+
 import os
 
 BASE_URL = "https://parentportal.ormiston.school.nz/api/api.php"

@@ -1,4 +1,7 @@
 # type: ignore
+""" (module) parse
+This module contains parsing functions to make things like xml data easier to work with
+"""
 
 import os
 import json

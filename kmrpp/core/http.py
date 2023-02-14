@@ -1,3 +1,7 @@
+""" (module) http
+This module contains the ParentPortal class which is responsible for making requests to the api
+"""
+
 import os
 from datetime import date
 from typing import Optional

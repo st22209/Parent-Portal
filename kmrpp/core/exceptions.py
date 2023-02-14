@@ -1,3 +1,7 @@
+""" (module) exceptions
+This module contains exceptions that will be raised by the app
+"""
+
 from rich.text import Text
 from rich.panel import Panel
 from rich.console import Console

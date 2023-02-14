@@ -1,3 +1,7 @@
+""" (script) __main__
+This is the script that runs the cli
+"""
+
 import os
 import json
 from datetime import datetime

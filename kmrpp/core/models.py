@@ -1,3 +1,7 @@
+""" (module) models
+This module contains models that are used to handle data
+"""
+
 from enum import Enum
 
 from pydantic import BaseModel
