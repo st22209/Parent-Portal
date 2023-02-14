@@ -34,4 +34,32 @@ Here is an example of getting my timetable for week 2:
 (This may look different if you are using a newer version)
 
 ---
-**This tool is not affiliated with KAMAR**
+
+## Example using it as a package
+
+While the CLI is the primary use of this project, if you want you can import it into you python code and use it directly.  
+
+Here is an example:
+```py
+from rich import print # for pretty printing
+from kmrpp import ParentPortal, Week, parse_timetable
+
+USERNAME = "person123"
+PASSWORD = "password456"
+
+# create parent portal object and login
+portal = ParentPortal(USERNAME, PASSWORD)
+
+# fetch data from api (or cache)
+timetable_data = portal.timetable()  # example using cache
+period_data = portal.periods(use_cache=False)  # not using cache
+
+# this is a list of Week objects
+parsed_tt: list[Week] = parse_timetable(timetable_data, period_data)
+
+# get week 3's data
+week3_data = parsed_tt[2]
+print(week3_data.days["Monday"])
+```
+
+**Note: This tool is not affiliated with KAMAR**
