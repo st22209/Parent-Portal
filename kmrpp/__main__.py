@@ -42,10 +42,11 @@ def get_portal() -> ParentPortal:
 app = typer.Typer()
 
 
+@app.command("ttjson", hidden=True, help="Alias for the 'timetable-to-json' command")
 @app.command(
     "timetable-to-json",
     hidden=True,
-    help="Convert entire terminal to json and give link to file",
+    help="Convert entire terminal to json and give link to file (alias: 'ttjson')",
 )
 def timetable_to_json():
     portal = get_portal()
@@ -58,7 +59,8 @@ def timetable_to_json():
     )
 
 
-@app.command("timetable-json", help="View timetable in json format")
+@app.command("tj", hidden=True, help="Alias for the 'timetable-json' command")
+@app.command("timetable-json", help="View timetable in json format, (alias: 'tt')")
 def timetable_json(
     week: int = typer.Option(
         ..., help="The number of the week you want the timetable for"
@@ -93,7 +95,8 @@ def timetable_json(
     print(JSON(json.dumps(week_data["days"][day.value])))
 
 
-@app.command("timetable", help="View you timetable as a Table")
+@app.command("tt", hidden=True, help="Alias for the 'timetable' command")
+@app.command("timetable", help="View you timetable as a Table (alias: 'tt')")
 def timetable_table(
     week: int = typer.Option(
         None, help="The number of the week you want the timetable for"
@@ -147,7 +150,8 @@ def timetable_table(
     )
 
 
-@app.command(help="Command to log you into parent portal")
+@app.command("l", hidden=True, help="Alias for the 'login' command")
+@app.command(help="Command to log you into parent portal (alias: 'l')")
 def login(
     username: str = typer.Option(
         ..., help="The username that you use on parent portal"
