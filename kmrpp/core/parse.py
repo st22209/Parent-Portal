@@ -98,9 +98,28 @@ def timetable_to_table(week_data: dict, week: int, dates: list[str]) -> Table:
         table.add_column(f"{dayname} ({'/'.join(date.split('-')[1:][::-1])})")
 
     times = []
+    colors = cycle(
+        [
+            "red",
+            "yellow",
+            "green",
+            "blue",
+            "magenta",
+            "cyan",
+            "green_yellow",
+            "blue1",
+            "red1",
+            "white",
+        ]
+    )
+    classes = {}
     for day in week_data["days"].values():
         for i in day["periods"]:
             times.append(i["period_time"])
+
+            if not i["class_name"] in classes:
+                classes[i["class_name"]] = next(colors)
+
     times = list(
         map(
             lambda x: datetime.strftime(x, "%H:%M"),
@@ -116,7 +135,8 @@ def timetable_to_table(week_data: dict, week: int, dates: list[str]) -> Table:
                     rdata = i["class_name"].split("-")[2:]
                     if rdata:
                         c, t, p = rdata
-                        row_data[k].append(f"{c} - {t} - {p}")
+                        color = classes.get(i["class_name"], "grey")
+                        row_data[k].append(f"[{color}]{c} - {t} - {p}")
                     else:
                         row_data[k].append("")
                     found = True
