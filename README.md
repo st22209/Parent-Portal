@@ -24,10 +24,34 @@ If that didn't work try: `python3 -m kmrpp` or `python -m kmrpp`:
 
 ![](https://raw.githubusercontent.com/st22209/Parent-Portal/main/assets/installed_example2.jpg)
 
+If you saw any of those above 2 images the tool has successfull been installed (If not skill issue tbh).  
 Now that you have it installed use `kmr --help` (or `python -m kmrpp --help`) to list commands.
 
+For the cli utility to work you must be logged in first so i recommend doing that:
 
-Here is an example of getting my timetable for week 2:
+### Login
+
+To login to the api use login command:
+```
+kmr login --username <Your Username>
+```
+(you can also use `kmr l`)
+
+It should prompt you for your password and once you enter it you should be logged in.
+
+### Get your timetable
+
+To get your timetable use that timetable command:
+```
+kmr timetable --week <Week>
+```
+(Alias for timetable command is `kmr tt`)
+
+**Tip:** If you want this weeks timetable type `kmr timetable` without giving the week option. It will then try to get the current weeks timetable.
+
+---
+
+## Example Using The CLI
 
 ![](https://raw.githubusercontent.com/st22209/Parent-Portal/main/assets/timetable.jpg)
 
