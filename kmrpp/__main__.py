@@ -176,6 +176,18 @@ def login(
     portal.calendar(use_cache=False)
 
 
+@app.command("reset-cache", help="Command to quickly reset the cache")
+def reset_cache():
+    portal = get_portal()
+
+    timetable_data = portal.timetable(use_cache=False)
+    period_data = portal.periods(use_cache=False)
+    calendar_data = portal.calendar(use_cache=False)
+
+    parse_timetable(timetable_data, period_data)
+    parse_calendar(calendar_data)
+
+
 def main():
     app()
 
